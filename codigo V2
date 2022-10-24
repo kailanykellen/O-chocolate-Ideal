@@ -1,0 +1,84 @@
+# Inicindo o Projeto
+# testando o git
+
+
+# Importando bibliotecas:
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+# Indicando constantes iniciais:
+
+
+# Lc = 46 e L são a msm coisa????
+cc = 1.59*1000  # calor especifico chocolate (J/g K)
+cp = 0.22*4200  # (cal/g C)
+A = 0.005  # Area, a mesma para os dois pois significa a area de contato do chocolate com a panela(metro2)
+ec = 0.02  # espessura do chocolate (metro)
+ep = 0.01
+Vc = A * ec  # volume do chocolate
+mc = 0.09  # massa chocolate (kg)
+mp = 0.1
+rho = mc / Vc  # densidade do chocolate
+kc = 0.163  # koeficiente de condutividade do chocolate (W/mk)
+kp = 250
+har = 25  # coeficiente de convecção do ar
+L = 46*1000  # Calor latente do chocolate (J/g)
+
+
+# Implementando a função
+
+def modelo(x, t):  # Ta retornando os Qs como lista e eu quero que seja apenas um valor
+    # Indicando primeiros parametros: 
+    Tp = x[0]
+    Tc = x[1]
+    M = x[2]
+    Q1 = (100+273.15 - Tp) / ((ep / 2) / (kp * A))
+    Q2 = (Tp - Tc) / (((ep / 2) / (kp * A)) + ((ec / 2) / (kc * A)))
+    Q3 = (25+273.15 - Tc) / (((ec / 2) / (kc * A)) + (1 / (har * A)))
+
+    dTpdt = (Q1 - Q2) / (mp * cp)
+    dTcdt = (Q2 - Q3) / (mc * cc)
+
+    if Tc < 36+273.15:
+        dMdt = 0
+    else:
+        dMdt = -(Q2 - Q3) / L  # dMsdt
+        dTcdt = 0
+    dxdt = [dTpdt, dTcdt, dMdt]
+    return dxdt
+
+
+# Condições iniciais
+Tp0 = 25+273.15  # vai começar com a temperatura ambiente ???
+Tc0 = 25+273.15
+M0 = mc
+
+X0 = [Tp0, Tc0, M0]
+
+dt = 30  # min
+
+t_lista = np.arange(0, 1000, dt)
+
+y = odeint(modelo, X0, t_lista)
+
+Tp = y[:, 0]
+Tc = y[:, 1]
+M = y[:, 2]
+
+# Plota resultados
+plt.plot(t_lista, Tp, 'black', label='Temperatura da panela')
+plt.plot(t_lista, Tc, label='Temperatura do chocolate')
+plt.xlabel('Tempo ($min$)')
+plt.ylabel('Temperatura ($^{\circ}C$)')
+plt.legend()
+plt.grid()
+plt.show()
+
+plt.plot(t_lista, M, label='Massa do chocolate')
+plt.xlabel('Tempo ($min$)')
+plt.ylabel('Massa (Kg)')
+plt.legend()
+plt.grid()
+plt.show()
