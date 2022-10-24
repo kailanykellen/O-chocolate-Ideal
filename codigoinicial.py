@@ -37,15 +37,14 @@ def modelo(x,t): # Ta retornando os Qs como lista e eu quero que seja apenas um 
     Tp = x[0]
     Tc = x[1] 
     Q1 = (Tp - 100)/((ep / 2)/(kp*A))
-    Q2 = (Tp - Tc)/((ep/2)/(kp*A)) + ((ec/2)/(kc*A))
-    Q3 = (Tc-25)/((ec/2)/(kc*A)) + (1/(har*A))
+    Q2 = (Tp - Tc)/(((ep/2)/(kp*A)) + ((ec/2)/(kc*A)))
+    Q3 = (Tc-25)/(((ec/2)/(kc*A)) + (1/(har*A)))
 
     dTpdt = (Q1 - Q2) / (mp*cp)
-    for i in Tc:
-        if Tc <= 25:
-            dTcdt =(Q2-Q3)/(mc*cc)
-        else:
-            dTcdt = (Q2-Q3)/L #dMsdt
+    if Tc <= 25:
+        dTcdt =(Q2-Q3)/(mc*cc)
+    else:
+        dTcdt = (Q2-Q3)/L #dMsdt
     dxdt = [dTpdt,dTcdt]
     return dxdt
 
@@ -56,7 +55,7 @@ Tc0 = 25
 
 X0 = [Tp0,Tc0]
 
-dt = 60 #segundos 
+dt = 1 #min
 
 t_lista = np.arange(0,100,dt)
 
@@ -73,6 +72,5 @@ plt.ylabel('Temperatura ($^{\circ}C$)')
 plt.legend()
 plt.grid()
 plt.show()
-
     
 
