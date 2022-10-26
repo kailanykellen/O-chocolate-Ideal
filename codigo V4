@@ -1,0 +1,85 @@
+# Inicindo o Projeto
+# testando o git
+
+
+# Importando bibliotecas:
+
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.integrate import odeint
+
+# Indicando constantes iniciais:
+
+
+# Lc = 46 e L são a msm coisa????
+cc = 1.59*1000  # calor especifico chocolate (J/g K)
+cp = 0.22*4200  # (cal/g C)
+A = 67.4e-3 * 26.3e-3  # Area, a mesma para os dois pois significa a area de contato do chocolate com a panela(metro2)
+ec = 7.15e-3  # espessura do chocolate (metro)
+ep = 2e-3
+Vc = A * ec  # volume do chocolate
+mc = 1325*Vc  # massa chocolate (kg)
+mp = 0.1
+kc = 0.163  # condutividade termica do chocolate (W/mk)
+kp = 1.2  # condutividade termica do boro 3.3 (W/mK)
+har = 25  # coeficiente de convecção do ar
+Lc = 46*1000  # Calor latente do chocolate (J/g)
+w = 4  # trabalho externo sobre o chocolate
+Tag = 50+273.15
+Tamb = 25+273.15
+
+# Implementando a função
+
+def modelo(x, t):  # Ta retornando os Qs como lista e eu quero que seja apenas um valor
+    # Indicando primeiros parametros: 
+    Tp = x[0]
+    Tc = x[1]
+    mc = x[2]
+    Q1 = (Tag - Tp) / ((ep / 2) / (kp * A))
+    Q2 = (Tp - Tc) / ((ep / 2) / (kp * A) + (ec / 2) / (kc * A))
+    Q3 = (Tc - Tamb) / ((ec / 2) / (kc * A) + 1 / (har * A))
+
+    dTpdt = (Q1 - Q2) / (mp * cp)
+
+    if Tc < (36+273.15):
+        dmcdt = 0
+        dTcdt = (Q2 - Q3) / (mc * cc)
+    else:
+        dmcdt = -(Q2 - Q3 + w) / Lc  # dMsdt
+        dTcdt = 0
+    dxdt = [dTpdt, dTcdt, dmcdt]
+    return dxdt
+
+
+# Condições iniciais
+Tp0 = Tamb  # vai começar com a temperatura ambiente ???
+Tc0 = Tamb
+M0 = mc
+
+X0 = [Tp0, Tc0, M0]
+
+dt = 1e-2  # s
+
+t_lista = np.arange(0, 28*60, dt)
+
+y = odeint(modelo, X0, t_lista)
+
+Tp = y[:, 0]-273.15
+Tc = y[:, 1]-273.15
+M = y[:, 2]
+
+# Plota resultados
+plt.plot(t_lista/60, Tp, 'black', label='Temperatura da panela')
+plt.plot(t_lista/60, Tc, label='Temperatura do chocolate')
+plt.xlabel('Tempo (min)')
+plt.ylabel('Temperatura ($^{\circ}C$)')
+plt.legend()
+plt.grid()
+plt.show()
+
+plt.plot(t_lista/60, M, label='Massa do chocolate')
+plt.xlabel('Tempo (min)')
+plt.ylabel('Massa (Kg)')
+plt.legend()
+plt.grid()
+plt.show()
